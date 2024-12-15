@@ -287,6 +287,83 @@ public class SchedulingAlgorithms {
         System.out.println("Average Turnaround Time: " + ceil(avgTurnTime));
     }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
+public void Shortest_Remaining_Time_Aging(Process[] processes, int n, int contextSwitchTime) {
+
+    Arrays.sort(processes, (p1, p2) -> Integer.compare(p1.getArrivalTime(), p2.getArrivalTime()));
+
+    int[] originalBurstTimes = new int[n];
+    for (int i = 0; i < n; i++) {
+        originalBurstTimes[i] = processes[i].getBurstTime();
+    }
+
+    int currentTime = 0;
+    int completedProcesses = 0;
+    int totalWaitingTime = 0;
+    int totalTurnaroundTime = 0;
+    Process lastProcess = null;
+    int agingFactor = 1;
+
+    while (completedProcesses < n) {
+        int shortestRemainingTime = Integer.MAX_VALUE;
+        Process nextProcess = null;
+
+        for (Process process : processes) {
+            if (process.getArrivalTime() <= currentTime && process.getBurstTime() > 0) {
+                if (process.getBurstTime() < shortestRemainingTime) {
+                    shortestRemainingTime = process.getBurstTime();
+                    nextProcess = process;
+                }
+            }
+        }
+
+        if (nextProcess != null) {
+            if (lastProcess != nextProcess && lastProcess != null) {
+                currentTime += contextSwitchTime;
+            }
+
+            nextProcess.setBurstTime(nextProcess.getBurstTime() - 1);
+            currentTime++;
+
+            if (nextProcess.getBurstTime() == 0) {
+                completedProcesses++;
+                int turnaroundTime = currentTime - nextProcess.getArrivalTime();
+                nextProcess.setTurnArroundTime(turnaroundTime);
+                int index = Arrays.asList(processes).indexOf(nextProcess);
+                nextProcess.setWaitingTime(turnaroundTime - originalBurstTimes[index]);
+            }
+
+            lastProcess = nextProcess;
+        } else {
+            currentTime++;
+
+            for (Process process : processes) {
+                if (process.getArrivalTime() <= currentTime && process.getBurstTime() > 0) {
+                    process.setBurstTime(process.getBurstTime() + agingFactor);
+                }
+            }
+        }
+    }
+
+    for (Process process : processes) {
+        totalWaitingTime += process.getWaitingTime();
+        totalTurnaroundTime += process.getTurnArroundTime();
+    }
+
+    double avgWaitTime = (double) totalWaitingTime / n;
+    double avgTurnTime = (double) totalTurnaroundTime / n;
+
+    System.out.println("Shortest Remaining Time First Scheduling Results:");
+    for (Process process : processes) {
+        System.out.println("/////////////////////////////////////");
+        System.out.println("Process waiting time of " + process.getProcessName() + " = " + process.getWaitingTime());
+        System.out.println("Process turnaround time of " + process.getProcessName() + " = " + process.getTurnArroundTime());
+    }
+
+    System.out.println("/////////////////////////////////////");
+    System.out.println("Average Waiting Time: " + Math.ceil(avgWaitTime));
+    System.out.println("Average Turnaround Time: " + Math.ceil(avgTurnTime));
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -309,7 +386,6 @@ public class SchedulingAlgorithms {
 
             readyQueue.removeIf(p -> p.isCompleted);
 
-            // Recalculate FCAI factors
             for (Process p : readyQueue) {
                 p.calculateFCAIFactor(v1, v2);
             }

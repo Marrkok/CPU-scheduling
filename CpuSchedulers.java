@@ -21,7 +21,7 @@ public class CpuSchedulers {
 
         SchedulingAlgorithms scheduler = new SchedulingAlgorithms(processes);
 
-        scheduler.Shortest_Remaining_Time(processes,4,1);
+        scheduler.Shortest_Remaining_Time_Aging(processes,4,1);
 
     }
 }
