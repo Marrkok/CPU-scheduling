@@ -207,7 +207,7 @@ public class SchedulingAlgorithms {
     }
 
 
-    //////////////////////////////////////////////////////////////////////////////////////
+ //////////////////////////////////////////////////////////////////////////////////////
     public void Shortest_Remaining_Time(Process[] processes, int n, int contextSwitchTime) {
 
         Arrays.sort(processes, (p1, p2) -> Integer.compare(p1.getArrivalTime(), p2.getArrivalTime()));
@@ -295,26 +295,31 @@ public void Shortest_Remaining_Time_Aging(Process[] processes, int n, int contex
     for (int i = 0; i < n; i++) {
         originalBurstTimes[i] = processes[i].getBurstTime();
     }
-
     int currentTime = 0;
     int completedProcesses = 0;
     int totalWaitingTime = 0;
     int totalTurnaroundTime = 0;
     Process lastProcess = null;
     int agingFactor = 1;
-
+    int[] waitbout=new int[n];
+    int wait_limit=5;
+    for (int i = 0; i < n; i++) {
+        waitbout[i] = 0;
+    }
     while (completedProcesses < n) {
         int shortestRemainingTime = Integer.MAX_VALUE;
         Process nextProcess = null;
+            int j=0;
+            for (Process process : processes) {
+                if (process.getArrivalTime() <= currentTime && process.getBurstTime() > 0) {
+                    if (process.getBurstTime() < shortestRemainingTime||waitbout[j]>=wait_limit) {
+                        shortestRemainingTime = process.getBurstTime();
+                        nextProcess = process;
 
-        for (Process process : processes) {
-            if (process.getArrivalTime() <= currentTime && process.getBurstTime() > 0) {
-                if (process.getBurstTime() < shortestRemainingTime) {
-                    shortestRemainingTime = process.getBurstTime();
-                    nextProcess = process;
+                    }
                 }
+              j++;
             }
-        }
 
         if (nextProcess != null) {
             if (lastProcess != nextProcess && lastProcess != null) {
@@ -323,6 +328,12 @@ public void Shortest_Remaining_Time_Aging(Process[] processes, int n, int contex
 
             nextProcess.setBurstTime(nextProcess.getBurstTime() - 1);
             currentTime++;
+            int i=0;
+            for (Process process : processes){
+                if(process.getArrivalTime()<=currentTime&&process!=nextProcess){
+                    waitbout[i]++;
+                }
+            }
 
             if (nextProcess.getBurstTime() == 0) {
                 completedProcesses++;
@@ -335,10 +346,11 @@ public void Shortest_Remaining_Time_Aging(Process[] processes, int n, int contex
             lastProcess = nextProcess;
         } else {
             currentTime++;
-
+            int index=0;
             for (Process process : processes) {
                 if (process.getArrivalTime() <= currentTime && process.getBurstTime() > 0) {
-                    process.setBurstTime(process.getBurstTime() + agingFactor);
+                  waitbout[index]++;
+                  index++;
                 }
             }
         }
@@ -367,7 +379,7 @@ public void Shortest_Remaining_Time_Aging(Process[] processes, int n, int contex
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public void FCAIScheduling(Process[] processes) {
+ public void FCAIScheduling(Process[] processes) {
 
         double v1 = calculateV1(processes);
         double v2 = calculateV2(processes);
