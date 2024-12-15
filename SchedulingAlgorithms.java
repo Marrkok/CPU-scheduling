@@ -300,7 +300,6 @@ public void Shortest_Remaining_Time_Aging(Process[] processes, int n, int contex
     int totalWaitingTime = 0;
     int totalTurnaroundTime = 0;
     Process lastProcess = null;
-    int agingFactor = 1;
     int[] waitbout=new int[n];
     int wait_limit=5;
     for (int i = 0; i < n; i++) {
@@ -309,16 +308,21 @@ public void Shortest_Remaining_Time_Aging(Process[] processes, int n, int contex
     while (completedProcesses < n) {
         int shortestRemainingTime = Integer.MAX_VALUE;
         Process nextProcess = null;
-            int j=0;
-            for (Process process : processes) {
-                if (process.getArrivalTime() <= currentTime && process.getBurstTime() > 0) {
-                    if (process.getBurstTime() < shortestRemainingTime||waitbout[j]>=wait_limit) {
-                        shortestRemainingTime = process.getBurstTime();
-                        nextProcess = process;
+
+            for (int i=0,j=0;i<n;i++,j++) {
+                if (processes[i].getArrivalTime() <= currentTime && processes[i].getBurstTime() > 0) {
+                    if(waitbout[i]<wait_limit){
+                    if (processes[i].getBurstTime() < shortestRemainingTime||waitbout[j]>=wait_limit) {
+                        shortestRemainingTime = processes[i].getBurstTime();
+                        nextProcess = processes[i];
 
                     }
+                    else {
+                        shortestRemainingTime = processes[i].getBurstTime();
+                        nextProcess=processes[i];
+                        }
+                    }
                 }
-              j++;
             }
 
         if (nextProcess != null) {
@@ -376,9 +380,7 @@ public void Shortest_Remaining_Time_Aging(Process[] processes, int n, int contex
     System.out.println("Average Turnaround Time: " + Math.ceil(avgTurnTime));
 }
 
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////
  public void FCAIScheduling(Process[] processes) {
 
         double v1 = calculateV1(processes);
@@ -394,17 +396,12 @@ public void Shortest_Remaining_Time_Aging(Process[] processes, int n, int contex
                     readyQueue.add(p);
                 }
             }
-
-
             readyQueue.removeIf(p -> p.isCompleted);
 
             for (Process p : readyQueue) {
                 p.calculateFCAIFactor(v1, v2);
             }
-
-
             Process currentProcess = selectProcessWithLowestFCAI(readyQueue);
-
             if (currentProcess != null) {
                 int startTime = currentTime;
                 System.out.println("Executing process: " + currentProcess.getProcessName() + " (Start time: " + startTime + ")");
