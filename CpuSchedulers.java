@@ -15,13 +15,13 @@ public class CpuSchedulers {
         Process[] processes = new Process[] {
                 new Process("0", 0, 17, 4,4),
                 new Process("1", 3, 6, 9,3),
-                new Process("2", 4, 10, 3,5),
+                new Process("2", 4, 3, 3,5),
                 new Process("3", 29, 4, 8,2)
         };
 
         SchedulingAlgorithms scheduler = new SchedulingAlgorithms(processes);
 
-        scheduler.FCAIScheduling(processes);
+        scheduler.Shortest_job_First();
 
     }
 }
