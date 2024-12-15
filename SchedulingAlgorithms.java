@@ -96,9 +96,12 @@ public class SchedulingAlgorithms {
                 return Integer.compare(p1.getArrivalTime(), p2.getArrivalTime());
             }
             return Integer.compare(p1.getBurstTime(), p2.getBurstTime());
-
         });
-        int index=0;
+
+        int index = 0;
+        String[] executionOrder = new String[procesess.length];
+        int executionIndex = 0;
+
         while (index < procesess.length || !queue.isEmpty()) {
             while (index < procesess.length && procesess[index].getArrivalTime() <= starttime) {
                 queue.offer(procesess[index]);
@@ -112,7 +115,7 @@ public class SchedulingAlgorithms {
 
             Process currentProcess = queue.poll();
 
-            int waitingtime = (starttime - currentProcess.getArrivalTime()) ;
+            int waitingtime = (starttime - currentProcess.getArrivalTime());
             currentProcess.setWaitingTime(waitingtime);
 
             int endtime = starttime + currentProcess.getBurstTime();
@@ -124,39 +127,49 @@ public class SchedulingAlgorithms {
             totalwaitingtime += waitingtime;
             totalturnaroundtime += turnaroundtime;
 
+            executionOrder[executionIndex++] = currentProcess.getProcessName();
 
             System.out.println("Executing Process: " + currentProcess.getProcessName());
             System.out.println("    Waiting Time: " + currentProcess.getWaitingTime());
             System.out.println("    Turnaround Time: " + currentProcess.getTurnArroundTime());
             System.out.println("----------------------------------------");
         }
+
+        double avg_wait_time = (double) totalwaitingtime / procesess.length;
+        double avg_turn_time = (double) totalturnaroundtime / procesess.length;
+
+        System.out.println("Execution Order: " + Arrays.toString(executionOrder));
+        System.out.println("");
+        System.out.println("Average Waiting Time: " + ceil(avg_wait_time));
+        System.out.println("Average Turnaround Time: " + ceil(avg_turn_time));
+        System.out.println("");
     }
 
+
+
     ////////////////////////////////////////////////////////////////////////////////////
-    public void Shortest_job_First_With_Aging_Array() {
+    public void Shortest_job_First_With_Aging() {
         int n = procesess.length;
-        Process[] readyQueue = new Process[n];
         boolean[] completed = new boolean[n];
         int[] waitingTime = new int[n];
         int[] effectiveBurstTime = new int[n];
+        String[] executionOrder = new String[n];
 
-        // Initialize effective burst times
         for (int i = 0; i < n; i++) {
             effectiveBurstTime[i] = procesess[i].getBurstTime();
         }
 
         int currentTime = 0, completedCount = 0;
+        int executionIndex = 0;
 
         while (completedCount < n) {
             int selectedIndex = -1;
             int minBurstTime = Integer.MAX_VALUE;
 
-            // Find the process with the shortest effective burst time
             for (int i = 0; i < n; i++) {
                 if (!completed[i] && procesess[i].getArrivalTime() <= currentTime) {
-                    // Apply aging to calculate effective burst time
                     waitingTime[i] = currentTime - procesess[i].getArrivalTime();
-                    effectiveBurstTime[i] = procesess[i].getBurstTime() - (int) (waitingTime[i] * 0.1); // 10% reduction
+                    effectiveBurstTime[i] = procesess[i].getBurstTime() - (int) (waitingTime[i] * 0.1);
 
                     if (effectiveBurstTime[i] < minBurstTime) {
                         minBurstTime = effectiveBurstTime[i];
@@ -171,23 +184,30 @@ public class SchedulingAlgorithms {
                     currentTime = currentProcess.getArrivalTime();
                 }
 
-                // Update process times
                 int waiting = currentTime - currentProcess.getArrivalTime();
                 currentProcess.setWaitingTime(waiting);
                 currentTime += currentProcess.getBurstTime();
                 int turnaround = currentTime - currentProcess.getArrivalTime();
                 currentProcess.setTurnArroundTime(turnaround);
 
-                completed[selectedIndex] = true; // Mark as completed
+                completed[selectedIndex] = true;
                 completedCount++;
+
+                executionOrder[executionIndex++] = currentProcess.getProcessName();
             } else {
                 currentTime++;
             }
         }
 
+
+        System.out.println("Execution Order: " + Arrays.toString(executionOrder));
+
+
         printStatistics(procesess);
     }
-//////////////////////////////////////////////////////////////////////////////////////
+
+
+    //////////////////////////////////////////////////////////////////////////////////////
     public void Shortest_Remaining_Time(Process[] processes, int n, int contextSwitchTime) {
 
         Arrays.sort(processes, (p1, p2) -> Integer.compare(p1.getArrivalTime(), p2.getArrivalTime()));
@@ -266,9 +286,9 @@ public class SchedulingAlgorithms {
         System.out.println("Average Waiting Time: " + ceil(avgWaitTime));
         System.out.println("Average Turnaround Time: " + ceil(avgTurnTime));
     }
- ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public void FCAIScheduling(Process[] processes) {
 
@@ -355,6 +375,8 @@ public class SchedulingAlgorithms {
             System.out.println("Process " + p.getProcessName() + ":");
             System.out.println("Waiting Time: " + p.waitingTime);
             System.out.println("Turnaround Time: " + p.turnaroundTime);
+            System.out.println("/////////////////////////////");
+
             totalWaitingTime += p.waitingTime;
             totalTurnaroundTime += p.turnaroundTime;
         }
